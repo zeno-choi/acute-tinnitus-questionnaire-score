@@ -1,6 +1,6 @@
 import pandas as pd
 
-TFI_data = 'test TFI.xlsx'
+TFI_data = 'TFI_Tinnitus_Functional_Index (réponses).xlsx'
 df = pd.read_excel(TFI_data)
 print(df.head())
 
@@ -67,7 +67,6 @@ print (df.head())
 
 'C: creation of subscales'
 'C.1: creation of subscale scores'
-'subscales'
 'INTRUSIVE'
 Q2 = pd.Series(df['2. Quel était le NIVEAU D’INTENSITÉ de vos acouphènes?'])
 I = Percent_data.copy()
@@ -78,28 +77,61 @@ when using insert, it operates in th eplace and doesn't return anything: it does
 a new variable. Therfore assigning the operation as I will not create anything and leave none.
 so I must copy the df and assign it to allow the .insert operation in another df.'''
 
-'sense of control'
-Sc = df['4. Avez-vous eu l’impression de MAÎTRISER LA SITUATION face à vos acouphènes?',
-         '5. Vous a-t-il été facile de COMPOSER AVEC vos acouphènes?',
-         '6. Vous a-t-il été facile d’IGNORER vos acouphènes?']
-print(Sc.head())
-'cognitive'
-C = 789
-'sleep disturbance'
-Sl = 101112
-'auditory'
-A = 131415
-'intference with relaxation'
-R = 161718
+try:
+    'create list of rest of subscales: sense of control, cognitive, sleep disturbance, auditory, interference with relaxation'
+    subscales=['Sc', 'C', 'Sl', 'A', 'R']
+    'create dictionary to assign each value to a new dataframe'
+    subscales_dict={}
+    n = 7
+    j = 0
+    for j, subscale in enumerate(subscales):
+        try:
+            subscales_dict[subscale] = df.iloc[:, n:n + 3]
+        except KeyError:
+            print(f'Unable to create DataFrame for subscale {subscale}')
+        n+=3
+    print('subscales classed')
+except:
+    print('error')
+
+# show the dataframes
+for subscale, df_subscale in subscales_dict.items():
+    print(f'\nDataFrame for subscale {subscale}:')
+    print(df_subscale.head())
+'''items in the subscales_dict dictionary. Subscale=name of the subscale + value (df_subscale)=associated dataframe
+2nd line:will indicate name of the subscale; \n = creates new line under; f-string = embed value of subscale into string.'''
+
 'quality of life reduced'
-QOL = 19202122
+try:
+    QOL = df[['19. Votre capacité à apprécier les ACTIVITÉS SOCIALES?',
+        '20. Votre capacité à PROFITER DE LA VIE?',
+        '21. Vos RELATIONS avec votre famille, vos amis et les autres personnes?',
+        '''22. À quelle fréquence vos acouphènes vous ont-ils donné de la difficulté à faire votre TRAVAIL OU D'AUTRES TÂCHES (entretien de la maison, devoirs scolaires, soin des enfants ou autres)?''']]
+    subscales_dict['QOL'] = QOL
+except:
+    print('no work')
+
 'emotional stress'
-E = 232425
+try:
+    E = df[['23. Dans quelle mesure vos acouphènes vous ont-ils rendu(e) ANXIEUX(SE) ou INQUIÈT(E)?',
+        '24. Dans quelle mesure vous êtes-vous senti(e) INCOMMODÉ(E) ou CONTRARIÉ(E) à cause de vos acouphènes?',
+        '25. Dans quelle mesure avez-vous été DÉPRIMÉ(E) à cause de vos acouphènes?']]
+    subscales_dict['E'] = E
+except:
+    print('no work')
 
-'1: sum of answers for each subscale'
-'2: divide by number of valid answers'
-'3: multiply by 10 (percent scale)'
+'C.2: CALCULATIONS OF SUBSCALES'
+'add I to dictionary'
+subscales_dict['I'] = I
+mean_df = pd.DataFrame()
 
+for subscale, df_subscale in subscales_dict.items():
+    mean_df[subscale + '_Score'] = df_subscale.mean(axis=1) * 10
+print(mean_df.head())
+
+for column in mean_df.columns:
+    df[column] = mean_df[column]
+'''loop through each column and add each column to df'''
 
 'D: create a new excel file with the replaced values'
 output = 'TFI modified.xlsx'
